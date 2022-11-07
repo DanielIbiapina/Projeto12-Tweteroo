@@ -24,7 +24,7 @@ const tweets = [
 
 app.post("/sign-up", (req, res) => {
     const { username, avatar } = req.body;
-    
+
     if (!username || !avatar) {
       res.status(400).send({ message: "Insira todos os campos" });
       return;
