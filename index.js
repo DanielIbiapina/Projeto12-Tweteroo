@@ -5,74 +5,71 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-
-const user = [];
-const tweets = [
+// Dados iniciais
+const usuarios = [
   {
-    id: 2,
-    username: "Elon Musk",
-    tweet: "Bem-vindo ao Twitter",
-    avatar: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/34/Elon_Musk_Royal_Society_%28crop2%29.jpg/1200px-Elon_Musk_Royal_Society_%28crop2%29.jpg"
+    username: "bobesponja",
+    avatar:
+      "https://upload.wikimedia.org/wikipedia/pt/b/bf/SpongeBob_SquarePants_personagem.png",
   },
   {
-    id: 1,
-    username: "Twitter_oficial",
-    tweet: "Olá",
-    avatar: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4f/Twitter-logo.svg/800px-Twitter-logo.svg.png"
+    username: "patrick",
+    avatar:
+      "https://upload.wikimedia.org/wikipedia/pt/b/b1/Patrick_Estrela.png",
   },
 ];
 
+const tweets = [
+  { username: "bobesponja", tweet: "Eu amo o Hub" },
+  { username: "patrick", tweet: "Hoje o dia está lindo!" },
+  { username: "bobesponja", tweet: "Mal posso esperar pelo fim de semana!" },
+];
+
+// POST /sign-up
 app.post("/sign-up", (req, res) => {
-    const { username, avatar } = req.body;
+  const { username, avatar } = req.body;
 
-    if (!username || !avatar) {
-      res.status(400).send({ message: "Insira todos os campos" });
-      return;
-    }
-    user.push(req.body);
-    res.status(201).send("Usuário logado com sucesso!");
-}) 
+  if (!username || !avatar) {
+    return res.status(400).send("Todos os campos são obrigatórios!");
+  }
 
+  usuarios.push({ username, avatar });
+  res.send("OK");
+});
+
+// POST /tweets
+app.post("/tweets", (req, res) => {
+  const { username, tweet } = req.body;
+
+  if (!username || !tweet) {
+    return res.status(400).send("Todos os campos são obrigatórios!");
+  }
+
+  const usuarioExistente = usuarios.find((user) => user.username === username);
+  if (!usuarioExistente) {
+    return res.status(404).send("Usuário não encontrado!");
+  }
+
+  // Adiciona o novo tweet no topo da lista de tweets
+  tweets.unshift({ username, tweet });
+  res.send("OK");
+});
+
+// GET /tweets
 app.get("/tweets", (req, res) => {
-    
-    
-    if (tweets.length > 10) {
-      
-      const tweetsFiltrados = tweets.filter(ultdeztt => (ultdeztt.id > (tweets.length - 10)));
-
-      res.send(tweetsFiltrados);
-      return;
-    }
-  
-    res.send(tweets);
-  });
-  
-  
-
-  
-  app.post("/tweets", (req, res) => {
-    const { username, tweet } = req.body;
-    
-    const novoTweet = {
-      id: tweets.length + 1,
-      username,
-      tweet,
+  const ultimosTweets = tweets.slice(0, 10).map((tweet) => {
+    const usuario = usuarios.find((user) => user.username === tweet.username);
+    return {
+      username: tweet.username,
+      avatar: usuario ? usuario.avatar : null,
+      tweet: tweet.tweet,
     };
-  
-    tweets.unshift(novoTweet);
-  
-    res.status(201).send("Tweet criado com sucesso!");
   });
 
-  
-  
-  app.listen(5000, () => {
-    console.log(`Server running in port: ${5000}`);
-  });
+  res.send(ultimosTweets);
+});
 
-
-  //colocar foto nos tweets gerados
-  //att: tentei usar a função find user mas não consegui mesmo assim retornar o avatar
-  //mas de resto parece tudo ok!
-
-  
+// Configuração do servidor para rodar na porta 5000
+app.listen(5000, () => {
+  console.log("Servidor rodando na porta 5000");
+});
